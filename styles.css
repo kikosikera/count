@@ -1,0 +1,839 @@
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: #0a0e13;
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 40px 80px 40px;
+    overflow: hidden;
+}
+
+/* Background grid */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Gold horizontal glow band */
+.gold-glow {
+    position: absolute;
+    top: 140px;
+    left: 0;
+    right: 0;
+    height: 360px;
+    background: radial-gradient(ellipse 70% 50% at 50% 50%,
+            rgba(25, 118, 210, 0.09) 0%,
+            rgba(25, 118, 210, 0.04) 45%,
+            transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ============================================
+   HERO CONTENT
+   ============================================ */
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 940px;
+}
+
+/* ============================================
+   TOP NAVIGATION TAGS
+   ============================================ */
+
+.top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 0px;
+    margin-bottom: 24px;
+}
+
+.nav-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 16px;
+    background: #000000;
+    border: 1px solid rgba(148, 163, 184, 0.36);
+    border-radius: 4px;
+    color: #94a3b8;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+}
+
+.nav-tag:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+}
+
+/* ============================================
+   HEADLINE
+   ============================================ */
+
+.hero-headline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    line-height: 1.0;
+    margin-bottom: 0px;
+    padding-bottom: 8px;
+}
+
+.headline-gold {
+    font-size: 78px;
+    font-weight: 700;
+    color: #1976d2;
+    letter-spacing: -1px;
+}
+
+.headline-white {
+    font-size: 78px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -1px;
+    margin-top: 2px;
+}
+
+/* ============================================
+   SUBTITLE
+   ============================================ */
+
+.hero-subtitle {
+    font-size: 16px;
+    font-weight: 400;
+    color: #ffffff;
+    text-align: center;
+    align-self: center;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
+    margin-top: 0px;
+    margin-bottom: 36px;
+    padding-top: 0px;
+    padding-left: 0px;
+}
+
+.seats-limit {
+    color: #1976d2;
+}
+
+/* ============================================
+   FLIP CLOCK COUNTER — PERFECT MECHANICAL VERSION
+   ============================================ */
+
+.flip-counter-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    user-select: none;
+    perspective: 1000px;
+}
+
+.flip-counter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flip-card {
+    position: relative;
+    width: 76px;
+    height: 104px;
+    background: #000;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 104px; /* Centering helper */
+    text-align: center;
+    perspective: 400px;
+}
+
+/* Hinge Pins */
+.flip-card::before,
+.flip-card::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 12px;
+    background: linear-gradient(180deg, #333 0%, #111 50%, #333 100%);
+    border-radius: 3px;
+    z-index: 10;
+    transform: translateY(-50%);
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.flip-card::before { left: -3px; }
+.flip-card::after  { right: -3px; }
+
+/* Shared styles for all faces */
+.flip-card .top,
+.flip-card .bottom,
+.flip-card .leaf-front,
+.flip-card .leaf-back {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 52px;
+    overflow: hidden;
+    background: #15191e;
+    color: #f0f2f5;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Group Colors */
+.flip-white .top, .flip-white .bottom, .flip-white .leaf-front, .flip-white .leaf-back {
+    color: #f0f2f5;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.flip-gold .top, .flip-gold .bottom, .flip-gold .leaf-front, .flip-gold .leaf-back {
+    color: #1976d2;
+    text-shadow: 0 0 20px rgba(25, 118, 210, 0.4);
+}
+
+/* Top halves */
+.flip-card .top,
+.flip-card .leaf-front {
+    top: 0;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, #2a2f35 0%, #1e2329 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.5);
+}
+
+/* Bottom halves */
+.flip-card .bottom,
+.flip-card .leaf-back {
+    bottom: 0;
+    border-radius: 0 0 8px 8px;
+    background: linear-gradient(180deg, #15191e 0%, #0d1115 100%);
+}
+
+/* Positioning the numbers inside halves */
+.flip-card .top,
+.flip-card .leaf-front {
+    line-height: 104px;
+}
+.flip-card .bottom,
+.flip-card .leaf-back {
+    line-height: 0;
+}
+
+/* The Leaf (The flipping part) */
+.flip-card .leaf {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 52px;
+    z-index: 10;
+    transform-style: preserve-3d;
+    transform-origin: bottom;
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.flip-card .leaf-front,
+.flip-card .leaf-back {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.flip-card .leaf-back {
+    transform: rotateX(-180deg);
+}
+
+/* Moving Shadow on the Leaf */
+.flip-card .leaf::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.6s linear;
+    pointer-events: none;
+    z-index: 20;
+    backface-visibility: hidden;
+}
+
+/* Shadow on the bottom half that grows as the leaf falls */
+.flip-card .bottom::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+    z-index: 2;
+}
+
+/* Animation state */
+.flip-card.flipping .leaf {
+    transform: rotateX(-180deg);
+}
+
+.flip-card.flipping .leaf::after {
+    opacity: 1;
+}
+
+.flip-card.flipping .bottom::after {
+    opacity: 1;
+}
+
+/* Snap back reset */
+.flip-card .leaf[style*="transition: none"] {
+    transform: rotateX(0deg) !important;
+}
+
+.flip-slash {
+    font-family: 'Outfit', sans-serif;
+    font-size: 52px;
+    font-weight: 200;
+    color: rgba(25, 118, 210, 0.4);
+    margin: 0 12px;
+    position: relative;
+    top: -2px;
+}
+
+/* ============================================
+   FEATURE PILLS
+   ============================================ */
+
+.feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 26px;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #000000;
+    border: 1px solid rgba(148, 163, 184, 0.36);
+    border-radius: 50px;
+    color: #94a3b8;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    cursor: default;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.pill:hover {
+    border-color: rgba(25, 118, 210, 0.5);
+    background: rgba(25, 118, 210, 0.06);
+    transform: translateY(-2px);
+}
+
+.pill-icon {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   CTA BUTTON
+   ============================================ */
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 52px;
+    background-color: #1976d2;
+    color: #1A1400;
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-decoration: none;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(25, 118, 210, 0.30);
+}
+
+.cta-button:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   SIMULATOR SECTION
+   ============================================ */
+
+.simulator-section {
+    position: relative;
+    padding: 80px 40px 100px;
+    background: #080c10;
+    border-top: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+.simulator-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.sim-title {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
+.sim-title-gold {
+    color: #1976d2;
+}
+
+.sim-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+.simulator-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   CONTROL PANEL
+   ============================================ */
+
+.sim-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: rgba(15, 19, 24, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 24px 20px;
+    backdrop-filter: blur(12px);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.control-label svg {
+    color: #1976d2;
+    flex-shrink: 0;
+}
+
+/* Custom range slider */
+.sim-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sim-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #1976d2;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(25, 118, 210, 0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.sim-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(25, 118, 210, 0.6);
+}
+
+.sim-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #1976d2;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 12px rgba(25, 118, 210, 0.4);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 400;
+}
+
+.slider-value {
+    color: #1976d2;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* Buttons */
+.control-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.sim-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sim-btn-primary {
+    background: #1976d2;
+    color: #1A1400;
+}
+
+.sim-btn-primary:hover {
+    background: #1976d2;
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+}
+
+.sim-btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sim-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Stats */
+.sim-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+}
+
+.stat-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1976d2;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   CANVAS
+   ============================================ */
+
+.sim-canvas-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: #0d1117;
+    min-height: 560px;
+}
+
+#sim-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 560px;
+}
+
+.canvas-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(25, 118, 210, 0.12);
+    border: 1px solid rgba(25, 118, 210, 0.25);
+    color: #1976d2;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    pointer-events: none;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+    .hero {
+        padding: 40px 24px 60px 24px;
+    }
+
+    .headline-gold,
+    .headline-white {
+        font-size: 54px;
+    }
+
+    .hero-subtitle {
+        margin-bottom: 28px;
+    }
+
+    .feature-pills {
+        gap: 10px;
+    }
+
+    .pill {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    .simulator-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sim-controls {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .control-group {
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .flip-card {
+        width: 60px;
+        height: 84px;
+        font-size: 56px;
+        line-height: 84px;
+    }
+
+    .flip-card .top,
+    .flip-card .bottom,
+    .flip-card .leaf-front,
+    .flip-card .leaf-back {
+        height: 42px;
+    }
+
+    .flip-card .leaf {
+        height: 42px;
+    }
+
+    .flip-slash {
+        font-size: 42px;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero {
+        padding: 32px 16px 48px 16px;
+    }
+
+    .top-nav {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-tag {
+        padding: 5px 14px;
+        font-size: 11px;
+    }
+
+    .headline-gold,
+    .headline-white {
+        font-size: 36px;
+    }
+
+    .hero-subtitle {
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+
+    .feature-pills {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .pill {
+        width: 100%;
+        max-width: 260px;
+        justify-content: center;
+    }
+
+    .cta-button {
+        padding: 14px 40px;
+        font-size: 14px;
+    }
+
+    .flip-card {
+        width: 48px;
+        height: 68px;
+        font-size: 42px;
+        line-height: 68px;
+    }
+
+    .flip-card .top,
+    .flip-card .bottom,
+    .flip-card .leaf-front,
+    .flip-card .leaf-back {
+        height: 34px;
+    }
+
+    .flip-card .leaf {
+        height: 34px;
+    }
+
+    .flip-slash {
+        font-size: 32px;
+        margin: 0 4px;
+    }
+
+    .simulator-section {
+        padding: 48px 16px 60px;
+    }
+
+    .sim-title {
+        font-size: 28px;
+    }
+
+    .sim-controls {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .control-group {
+        min-width: unset;
+    }
+}
