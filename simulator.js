@@ -5,6 +5,17 @@
 (function () {
     'use strict';
 
+    // ── Audio Context Initialization ──────────
+    // We declare these early so they are available immediately
+    let audioCtx = null;
+    let masterGain = null;
+    let compressor = null;
+    let _pinkBuf = null;
+    let _animStartTime = 0;
+    let _animationId = null;
+
+    getAudioCtx(); // Eager initialization
+
     // ── Canvas Setup ──────────────────────────
     const canvas = document.getElementById('sim-canvas');
     const wrapper = document.getElementById('sim-canvas-wrapper');
@@ -249,7 +260,7 @@
 
     // ── Rendering ─────────────────────────────
     function drawGrid() {
-        ctx.strokeStyle = 'rgba(25, 118, 210, 0.04)';
+        ctx.strokeStyle = 'rgba(0, 250, 154, 0.04)';
         ctx.lineWidth = 0.5;
         const step = 48;
         for (let x = 0; x < W; x += step) {
@@ -274,7 +285,7 @@
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 160) {
                     const alpha = (1 - dist / 160) * 0.12;
-                    ctx.strokeStyle = `rgba(25, 118, 210, ${alpha})`;
+                    ctx.strokeStyle = `rgba(0, 250, 154, ${alpha})`;
                     ctx.lineWidth = 0.8;
                     ctx.beginPath();
                     ctx.moveTo(a.x, a.y);
@@ -398,10 +409,228 @@
     const counterCurrent = document.getElementById('counter-current');
     const counterTotal = document.getElementById('counter-total');
 
-    const leftStart = 248;
-    const leftEnd = 124;
-    const rightStart = 12;
-    const rightEnd = 248;
+    const leftStart = 12;
+    const leftEnd = 248;
+    const rightStart = 248;
+    const rightEnd = 12;
+
+    // ── Cinematic Audio Engine ────────────────
+    // Paul Kellet's pink noise algorithm: far more natural than white noise for mechanical impacts
+    function _buildPinkNoise(ctx) {
+        const sr = ctx.sampleRate || 44100;
+        const len = sr * 2; // 2-second buffer, accessed at random offsets for variation
+        const buf = ctx.createBuffer(1, len, sr);
+        const d = buf.getChannelData(0);
+        let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0;
+        for (let i = 0; i < len; i++) {
+            const w = Math.random() * 2 - 1;
+            b0 = 0.99886*b0 + w*0.0555179; b1 = 0.99332*b1 + w*0.0750759;
+            b2 = 0.96900*b2 + w*0.1538520; b3 = 0.86650*b3 + w*0.3104856;
+            b4 = 0.55000*b4 + w*0.5329522; b5 = -0.7616*b5 - w*0.0168980;
+            d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w*0.5362) / 8;
+            b6 = w * 0.115926;
+        }
+        return buf;
+    }
+
+    // Micro-helpers that keep synthesis code readable
+    function _noise() {
+        const s = audioCtx.createBufferSource();
+        s.buffer = _pinkBuf;
+        s.loopStart = Math.random() * 1.2; // Random offset gives each flip unique character
+        s.loopEnd = _pinkBuf.duration;
+        s.loop = true;
+        return s;
+    }
+    function _bpf(freq, q) {
+        const f = audioCtx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; return f;
+    }
+    function _lpf(freq) {
+        const f = audioCtx.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = freq; return f;
+    }
+    function _hpf(freq) {
+        const f = audioCtx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = freq; return f;
+    }
+    function _g(v) { const g = audioCtx.createGain(); g.gain.value = v; return g; }
+    function _pan(v) {
+        if (!audioCtx.createStereoPanner) return null;
+        const p = audioCtx.createStereoPanner(); p.pan.value = v; return p;
+    }
+    function _osc(type, freq) {
+        const o = audioCtx.createOscillator(); o.type = type; o.frequency.value = freq; return o;
+    }
+
+    function getAudioCtx() {
+        if (!audioCtx) {
+            try {
+                const Cls = window.AudioContext || window.webkitAudioContext;
+                if (!Cls) return null;
+                audioCtx = new Cls();
+                masterGain = _g(1.0); // Maximum clean volume
+
+                const presEQ = audioCtx.createBiquadFilter();
+                presEQ.type = 'peaking';
+                presEQ.frequency.value = 2200;
+                presEQ.Q.value = 0.85;
+                presEQ.gain.value = 3.0;
+
+                const airEQ = audioCtx.createBiquadFilter();
+                airEQ.type = 'highshelf';
+                airEQ.frequency.value = 9000;
+                airEQ.gain.value = 2.5;
+
+                compressor = audioCtx.createDynamicsCompressor();
+                compressor.threshold.value = -14;
+                compressor.knee.value = 6;
+                compressor.ratio.value = 4;
+                compressor.attack.value = 0.001;
+                compressor.release.value = 0.12;
+
+                masterGain.connect(presEQ);
+                presEQ.connect(airEQ);
+                airEQ.connect(compressor);
+                compressor.connect(audioCtx.destination);
+
+                _pinkBuf = _buildPinkNoise(audioCtx);
+
+                audioCtx.addEventListener('statechange', function _onReady() {
+                    if (audioCtx.state !== 'running') return;
+                    audioCtx.removeEventListener('statechange', _onReady);
+                    const elapsed = performance.now() - _animStartTime;
+
+                    if (_animStartTime <= 0) return;
+
+                    if (elapsed <= 500) {
+                        playSystemInit();
+                        return;
+                    }
+
+                    if (counterAnimated) {
+                        // Cleanly stop any existing animation
+                        if (_animationId) cancelAnimationFrame(_animationId);
+                        
+                        document.querySelectorAll('.flip-card').forEach(card => {
+                            card.classList.remove('flipping');
+                            if (card.flipTimer) { clearTimeout(card.flipTimer); card.flipTimer = null; }
+                            const leaf = card.querySelector('.leaf');
+                            if (leaf) { leaf.style.transition = 'none'; leaf.style.transform = 'rotateX(0deg)'; }
+                        });
+                        
+                        counterAnimated = false; // Allow animateCounter to run again
+                        setDigits(counterCurrent, leftStart, 3);
+                        setDigits(counterTotal, rightStart, 3);
+                        setTimeout(animateCounter, 50);
+                    }
+                });
+            } catch (e) { return null; }
+        }
+
+        // Proactively attempt resume on every access if suspended
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+        }
+        return audioCtx;
+    }
+
+    function unlockAudio() {
+        const ctx = getAudioCtx();
+        if (ctx && ctx.state !== 'running') {
+            ctx.resume().catch(() => {});
+        }
+    }
+
+    // Listen for clear user intent to unlock the Web Audio context
+    ['click', 'mousedown', 'touchstart', 'keydown'].forEach(ev => {
+        document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+    });
+
+    // Periodic check to help with autoplay on refresh
+    setInterval(() => {
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+        }
+    }, 1000);
+
+    // Listen for visibility changes (helps with resume after tab switch/refresh)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            unlockAudio();
+        }
+    });
+
+    // Explicitly allow clicking the hero to start audio
+    const hero = document.getElementById('hero-section');
+    if (hero) {
+        hero.addEventListener('click', unlockAudio);
+    }
+
+    // ── Cinematic Components ──────────────────
+
+    function playSystemInit() {
+        // No whistle/init sounds as requested
+    }
+
+    function playFlipClack(isFast = false, isFinal = false, pan = 0) {
+        const ctx = getAudioCtx();
+        if (!ctx) return; 
+        
+        // Force a resume attempt on every clack if suspended (helps with "sometimes" issues)
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        
+        const t = ctx.currentTime;
+        const panner = _pan(pan);
+        const out = panner || masterGain;
+        if (panner) panner.connect(masterGain);
+
+        const v = 0.9 + Math.random() * 0.2; // Variation
+
+        // ── Main Mechanical Clack (Impact) ──
+        const n = _noise();
+        const f = _bpf(1400 * v, 1.2);
+        const h = _hpf(300);
+        const g = _g(0);
+        
+        const vol = isFast ? 0.25 : 0.65;
+        const dec = isFast ? 0.04 : 0.08;
+        
+        g.gain.setValueAtTime(vol, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dec);
+        
+        n.connect(f); f.connect(h); h.connect(g); g.connect(out);
+        n.start(t); n.stop(t + dec + 0.02);
+
+        // ── Low-End Thud (Body Resonance) ──
+        if (!isFast) {
+            const thud = _osc('triangle', 110 * v);
+            const thudG = _g(0);
+            thud.frequency.setValueAtTime(110 * v, t);
+            thud.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+            thudG.gain.setValueAtTime(0.2, t);
+            thudG.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+            thud.connect(thudG); thudG.connect(out);
+            thud.start(t); thud.stop(t + 0.15);
+        }
+
+        // ── High-End Snap ──
+        const snap = _osc('square', 4500 * v);
+        const snapG = _g(0);
+        snapG.gain.setValueAtTime(0.04, t);
+        snapG.gain.exponentialRampToValueAtTime(0.0001, t + 0.01);
+        snap.connect(snapG); snapG.connect(out);
+        snap.start(t); snap.stop(t + 0.02);
+    }
+
+    function playDeepMomentum() {
+        // Removed as requested to keep only regular card sounds
+    }
+
+    function playResolution() {
+        // No final hit/resolution sounds as requested
+    }
+
 
     function setDigit(card, char) {
         card.querySelector('.top').textContent = char;
@@ -410,44 +639,62 @@
         card.querySelector('.leaf-back').textContent = char;
     }
 
-    function setDigits(group, value, digits) {
+    function setDigits(group, value, digits, pan = 0) {
         const str = String(value).padStart(digits, '0');
         const cards = group.querySelectorAll('.flip-card');
         cards.forEach((card, i) => {
-            setDigit(card, str[i] || '0');
+            setDigit(card, str[i] || '0', pan);
         });
     }
 
-    function flipDigit(card, newChar) {
+    function flipDigit(card, newChar, pan = 0) {
         const top = card.querySelector('.top');
         const bottom = card.querySelector('.bottom');
         const leafFront = card.querySelector('.leaf-front');
         const leafBack = card.querySelector('.leaf-back');
         const leaf = card.querySelector('.leaf');
 
-        if (top.textContent === newChar) return;
+        const oldChar = top.textContent;
+        if (oldChar === newChar) return;
+
+        const now = Date.now();
+        const lastFlipTime = parseInt(card.dataset.lastFlip || "0");
+        const isFast = (now - lastFlipTime < 100);
+        card.dataset.lastFlip = now;
+
+        if (isFast) {
+            leaf.style.transitionDuration = '0.1s';
+        } else {
+            leaf.style.transitionDuration = '';
+        }
+
+        // Cinematic Clack
+        playFlipClack(isFast, false, pan);
 
         card.classList.add('flipping');
         top.textContent = newChar;
         leafBack.textContent = newChar;
 
-        setTimeout(() => {
+        if (card.flipTimer) clearTimeout(card.flipTimer);
+        const duration = isFast ? 100 : 600;
+
+        card.flipTimer = setTimeout(() => {
             bottom.textContent = newChar;
             leafFront.textContent = newChar;
             card.classList.remove('flipping');
-            
             leaf.style.transition = 'none';
             leaf.style.transform = 'rotateX(0deg)';
-            leaf.getBoundingClientRect(); 
+            leaf.getBoundingClientRect();
             leaf.style.transition = '';
-        }, 600);
+            card.flipTimer = null;
+        }, duration);
     }
 
-    function updateFlipDigits(group, value, digits) {
+    function updateFlipDigits(group, value, digits, pan = 0) {
         const str = String(value).padStart(digits, '0');
         const cards = group.querySelectorAll('.flip-card');
         cards.forEach((card, i) => {
-            flipDigit(card, str[i] || '0');
+            flipDigit(card, str[i] || '0', pan);
         });
     }
 
@@ -455,46 +702,71 @@
 
     function animateCounter() {
         if (counterAnimated) return;
+        if (_animationId) cancelAnimationFrame(_animationId);
+        
+        const ctx = getAudioCtx(); 
+        if (ctx) {
+            // Warm up the context with a silent buffer
+            const b = ctx.createBuffer(1, 1, 22050);
+            const s = ctx.createBufferSource();
+            s.buffer = b; s.connect(ctx.destination);
+            s.start(0);
+        }
+        
         counterAnimated = true;
+        _animStartTime = performance.now(); 
 
-        const duration = 2500;
+        // 400 ms init window: system hum + relay click + calibration beep play first,
+        // then digit flipping begins — matching [0.0–0.4 s] of the sound spec.
+        const duration = 4500;
         const start = performance.now();
+
+        playSystemInit();
+
+        let momentumPlayed = false;
 
         function tick(now) {
             const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
+            const progress = Math.max(0, Math.min(elapsed / duration, 1));
 
-            const leftCount = Math.round(leftStart - eased * (leftStart - leftEnd));
-            const rightCount = Math.round(rightStart + eased * (rightEnd - rightStart));
+            // easeInOutQuart: slow start → fast cascade → slow convergence
+            const eased = progress < 0.5
+                ? 8 * progress * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
-            updateFlipDigits(counterCurrent, leftCount, 3);
-            updateFlipDigits(counterTotal, rightCount, 3);
+            if (progress > 0.4 && !momentumPlayed) {
+                playDeepMomentum();
+                momentumPlayed = true;
+            }
 
-            if (progress < 1) requestAnimationFrame(tick);
+            const leftCount = Math.round(leftStart + eased * (leftEnd - leftStart));
+            const rightCount = Math.round(rightStart - eased * (rightStart - rightEnd));
+
+            // Left counter fires immediately; right counter audio is staggered 9–17 ms
+            // to produce the authentic "double-clack" texture of two simultaneous split-flap units.
+            updateFlipDigits(counterCurrent, leftCount, 3, -0.55);
+            const rc = rightCount;
+            setTimeout(() => updateFlipDigits(counterTotal, rc, 3, 0.55), 9 + Math.floor(Math.random() * 9));
+
+            if (progress < 1) {
+                _animationId = requestAnimationFrame(tick);
+            } else {
+                _animationId = null;
+                setTimeout(playResolution, 55);
+            }
         }
 
-        requestAnimationFrame(tick);
+        _animationId = requestAnimationFrame(tick);
     }
 
     const counterEl = document.getElementById('flip-counter');
     if (counterEl) {
-        if ('IntersectionObserver' in window) {
-            const obs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) {
-                        animateCounter();
-                        obs.unobserve(e.target);
-                    }
-                });
-            }, { threshold: 0.5 });
-            obs.observe(counterEl);
-        } else {
-            setTimeout(animateCounter, 500);
-        }
+        // Start after a short delay to allow browser to settle
+        setTimeout(animateCounter, 100);
     }
 
     setDigits(counterCurrent, leftStart, 3);
     setDigits(counterTotal, rightStart, 3);
+
 
 })();
