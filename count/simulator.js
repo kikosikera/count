@@ -74,7 +74,7 @@
 
     // ── Object Pool ───────────────────────────
     const COLORS = [
-        { fill: '#2fbd59', glow: 'rgba(47,189,89,0.35)' },
+        { fill: '#3b82f6', glow: 'rgba(59,130,246,0.35)' },
         { fill: '#22d3ee', glow: 'rgba(34,211,238,0.35)' },
         { fill: '#a78bfa', glow: 'rgba(167,139,250,0.35)' },
         { fill: '#f472b6', glow: 'rgba(244,114,182,0.35)' },
@@ -238,7 +238,7 @@
 
     // ── Rendering ─────────────────────────────
     function drawGrid() {
-        ctx.strokeStyle = 'rgba(47, 189, 89, 0.04)';
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.04)';
         ctx.lineWidth = 0.5;
         const step = 48;
         for (let x = 0; x < W; x += step) {
@@ -263,7 +263,7 @@
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 160) {
                     const alpha = (1 - dist / 160) * 0.12;
-                    ctx.strokeStyle = `rgba(47, 189, 89, ${alpha})`;
+                    ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
                     ctx.lineWidth = 0.8;
                     ctx.beginPath();
                     ctx.moveTo(a.x, a.y);
