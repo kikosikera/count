@@ -94,14 +94,14 @@
 
     // ── Object Pool ───────────────────────────
     const COLORS = [
-        { fill: '#1976d2', glow: 'rgba(25,118,210,0.35)' },
-        { fill: '#22d3ee', glow: 'rgba(34,211,238,0.35)' },
+        { fill: '#db2777', glow: 'rgba(219,39,119,0.35)' },
+        { fill: '#ec4899', glow: 'rgba(236,72,153,0.35)' },
         { fill: '#a78bfa', glow: 'rgba(167,139,250,0.35)' },
         { fill: '#f472b6', glow: 'rgba(244,114,182,0.35)' },
         { fill: '#fb923c', glow: 'rgba(251,146,60,0.35)' },
-        { fill: '#facc15', glow: 'rgba(250,204,21,0.35)' },
+        { fill: '#fbcfe8', glow: 'rgba(251,207,232,0.35)' },
         { fill: '#e8eaed', glow: 'rgba(232,234,237,0.25)' },
-        { fill: '#38bdf8', glow: 'rgba(56,189,248,0.35)' },
+        { fill: '#fda4af', glow: 'rgba(253,164,175,0.35)' },
     ];
 
     let objects = [];

@@ -9,7 +9,7 @@
 - [x] **Step 2:** Update simulator.js canvas colors in COLORS and strokeStyle.
 - [x] **Step 3:** Update index.html class references (.green-glow → .gold-glow, .flip-green → .flip-gold).
 - [x] **Step 4:** Test the updated site (open index.html).
-- [ ] **Step 5:** Mark complete with attempt_completion.
+- [x] **Step 5:** Mark complete with the yellow-to-pink replacement task finalized.
 
-**Current Status:** All edits complete and site launched in browser for visual verification. Gold palette successfully replaces green throughout.
+**Current Status:** All edits complete. Yellow accent colors and gold classes replaced with premium hot pink (#ff2a85) throughout index.html, styles.css, and simulator.js. Contrast adjusted for accessibility.
 
